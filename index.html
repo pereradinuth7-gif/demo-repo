@@ -108,51 +108,18 @@
         
       </div>
 
-      <div class="booking-layout">
-        <form class="booking-form" id="booking-form" novalidate>
-          <fieldset class="form-step">
-            <legend><span class="step-number">01</span><span>Choose your service</span></legend>
-            <label class="field-label" for="service-select">What are we doing today?</label>
-            <select id="service-select" name="service" required></select>
-          </fieldset>
-
-          <fieldset class="form-step">
-            <legend><span class="step-number">02</span><span>Pick a day & time</span></legend>
-            <label class="field-label" for="booking-date">Your preferred date</label>
-            <input id="booking-date" name="date" type="date" required>
-            <span class="field-hint">Choose today or any day that suits you.</span>
-            <span class="field-label time-label">Your preferred time</span>
-            <div class="time-slots" id="time-slots" role="group" aria-label="Choose a time slot"></div>
-            <p class="field-hint">The studio will confirm your preferred time on WhatsApp.</p>
-          </fieldset>
-
-          <fieldset class="form-step">
-            <legend><span class="step-number">03</span><span>A little about you</span></legend>
-            <label class="field-label" for="customer-name">Your name</label>
-            <input id="customer-name" name="name" type="text" placeholder="How should we say hello?" autocomplete="name" minlength="2" maxlength="80" required>
-            <label class="field-label contact-label" for="customer-phone">Phone number</label>
-            <input id="customer-phone" name="phone" type="tel" placeholder="+94 77 123 4567" autocomplete="tel" pattern="[0-9+\(\) \-]{7,20}" minlength="7" maxlength="20" title="Enter a phone number using digits, spaces, +, parentheses, or hyphens." required>
-          </fieldset>
-
-          <button class="button button-dark submit-button" type="submit">Send booking request on WhatsApp <span aria-hidden="true">↗</span></button>
-          <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
-          <p class="privacy-note">Your details are sent to the salon on WhatsApp .</p>
-        </form>
-
-        <aside class="booking-summary" aria-labelledby="summary-title">
-          <p class="eyebrow"><span class="eyebrow-line"></span> YOUR LITTLE PLAN</p>
-          <h2 id="summary-title">The details,<br><em>so far.</em></h2>
-          <div class="summary-rule"></div>
-          <dl class="summary-list">
-            <div><dt>Your service</dt><dd id="summary-service">Choose a service</dd></div>
-            <div><dt>Your date</dt><dd id="summary-date">Choose a day</dd></div>
-            <div><dt>Your time</dt><dd id="summary-time">Choose a time</dd></div>
-          </dl>
-          <div class="summary-total"><span>Estimated total</span><strong id="summary-price">LKR —</strong></div>
-          <p class="summary-note"><span aria-hidden="true">✳</span> Your date and time are preferences; the studio will confirm your appointment on WhatsApp.</p>
-          <div class="summary-flower" aria-hidden="true">✿</div>
-        </aside>
-      </div>
+    <div class="booking-layout">
+  <div class="google-calendar-booking">
+    <iframe
+      src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ031nemwzjZlQQ-pLYFrACiF-fRndYRQgnDjt9onghMW9h_ZJZMNvT9JZ1U6mIEMzA4uGOdJh_N?gv=true"
+      title="Book a Nails Ceylon appointment"
+      width="100%"
+      height="700"
+      frameborder="0"
+      style="border: 0"
+    ></iframe>
+  </div>
+</div>
     </section>
   </main>
 

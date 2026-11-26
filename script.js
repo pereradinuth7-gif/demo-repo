@@ -1,4 +1,4 @@
-// Keep the service menu in one place so the cards, selector, and prices agree.
+
 const services = [
   {
     id: "classic-manicure",
@@ -50,20 +50,42 @@ const services = [
   }
 ];
 
-const timeOptions = ["9:30 am", "10:45 am", "12:00 pm", "1:15 pm", "2:30 pm", "3:45 pm"];
 const serviceGrid = document.querySelector("#service-grid");
-const serviceSelect = document.querySelector("#service-select");
-const dateInput = document.querySelector("#booking-date");
-const timeSlots = document.querySelector("#time-slots");
-const bookingForm = document.querySelector("#booking-form");
-const formMessage = document.querySelector("#form-message");
 const homePage = document.querySelector("#home-page");
 const bookingPage = document.querySelector("#booking-page");
+const calendarContainer = document.querySelector(".google-calendar-booking");
 
-let selectedTime = "";
+let selectedService = null;
 
 function formatPrice(amount) {
-  return `LKR ${new Intl.NumberFormat("en-LK", { maximumFractionDigits: 0 }).format(amount)}`;
+  return `LKR ${new Intl.NumberFormat("en-LK", {
+    maximumFractionDigits: 0
+  }).format(amount)}`;
+}
+
+// Display the selected service above the Google Calendar.
+function createServiceNotice() {
+  const notice = document.createElement("div");
+  notice.className = "selected-service-notice";
+  notice.id = "selected-service-notice";
+  notice.setAttribute("aria-live", "polite");
+
+  calendarContainer.prepend(notice);
+  updateSelectedService();
+}
+
+function updateSelectedService() {
+  const notice = document.querySelector("#selected-service-notice");
+
+  if (!notice) return;
+
+  if (selectedService) {
+    notice.textContent =
+      `Your selected service: ${selectedService.name} · ${formatPrice(selectedService.price)}. Please select this service again in the booking form below.`;
+  } else {
+    notice.textContent =
+      "Choose your preferred appointment time below. Remember to select your service in the booking form.";
+  }
 }
 
 function renderServices() {
@@ -98,72 +120,12 @@ function renderServices() {
     bottom.append(price, bookButton);
     card.append(category, title, description, bottom);
     serviceGrid.append(card);
-
-    const option = document.createElement("option");
-    option.value = service.id;
-    option.textContent = `${service.name} · ${formatPrice(service.price)}`;
-    serviceSelect.append(option);
   });
-}
-
-function getSelectedService() {
-  return services.find((service) => service.id === serviceSelect.value);
-}
-
-function formatSelectedDate() {
-  if (!dateInput.value) {
-    return "Choose a day";
-  }
-
-  // Setting noon avoids a date appearing as the previous day in some time zones.
-  const localDate = new Date(`${dateInput.value}T12:00:00`);
-  return new Intl.DateTimeFormat("en-LK", {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(localDate);
-}
-
-function updateSummary() {
-  const service = getSelectedService();
-  document.querySelector("#summary-service").textContent = service ? service.name : "Choose a service";
-  document.querySelector("#summary-date").textContent = formatSelectedDate();
-  document.querySelector("#summary-time").textContent = selectedTime || "Choose a time";
-  document.querySelector("#summary-price").textContent = service ? formatPrice(service.price) : "LKR —";
-}
-
-function renderTimeSlots() {
-  timeOptions.forEach((time) => {
-    const button = document.createElement("button");
-    button.className = "time-slot";
-    button.type = "button";
-    button.textContent = time;
-    button.setAttribute("aria-pressed", "false");
-    button.addEventListener("click", () => {
-      selectedTime = time;
-      timeSlots.querySelectorAll(".time-slot").forEach((slot) => {
-        slot.setAttribute("aria-pressed", String(slot === button));
-      });
-      formMessage.textContent = "";
-      formMessage.classList.remove("is-error");
-      updateSummary();
-    });
-    timeSlots.append(button);
-  });
-}
-
-function setMinimumDate() {
-  // Use the visitor's local calendar date rather than UTC for the date input.
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  dateInput.min = `${year}-${month}-${day}`;
 }
 
 function showCurrentPage() {
   const isBookingPage = window.location.hash === "#booking";
+
   homePage.hidden = isBookingPage;
   bookingPage.hidden = !isBookingPage;
 
@@ -175,9 +137,7 @@ function showCurrentPage() {
     }
   });
 
-  if (isBookingPage) {
-    window.scrollTo(0, 0);
-  } else if (window.location.hash === "#home") {
+  if (isBookingPage || window.location.hash === "#home") {
     window.scrollTo(0, 0);
   } else if (window.location.hash === "#services") {
     document.querySelector("#services").scrollIntoView();
@@ -187,10 +147,11 @@ function showCurrentPage() {
 }
 
 function openBooking(serviceId) {
-  if (serviceId) {
-    serviceSelect.value = serviceId;
-    updateSummary();
-  }
+  selectedService = services.find(
+    (service) => service.id === serviceId
+  ) || null;
+
+  updateSelectedService();
 
   if (window.location.hash !== "#booking") {
     window.location.hash = "booking";
@@ -200,70 +161,15 @@ function openBooking(serviceId) {
 }
 
 renderServices();
-renderTimeSlots();
-setMinimumDate();
-updateSummary();
+createServiceNotice();
 showCurrentPage();
 
 window.addEventListener("hashchange", showCurrentPage);
 
 serviceGrid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-service]");
+
   if (button) {
     openBooking(button.dataset.service);
   }
-});
-
-serviceSelect.addEventListener("change", updateSummary);
-
-dateInput.addEventListener("change", () => {
-  selectedTime = "";
-  timeSlots.querySelectorAll(".time-slot").forEach((slot) => {
-    slot.setAttribute("aria-pressed", "false");
-  });
-  formMessage.textContent = "";
-  formMessage.classList.remove("is-error");
-  updateSummary();
-});
-bookingForm.addEventListener("input", () => {
-  formMessage.textContent = "";
-  formMessage.classList.remove("is-error");
-});
-
-
-bookingForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  formMessage.textContent = "";
-  formMessage.classList.remove("is-error");
-
-  if (!bookingForm.reportValidity()) {
-    return;
-  }
-
-  if (!selectedTime) {
-    formMessage.textContent =
-      "Please choose your preferred time above.";
-    formMessage.classList.add("is-error");
-    timeSlots.querySelector("button").focus();
-    return;
-  }
-
-  const service = getSelectedService();
-  const customerName = document.querySelector("#customer-name").value.trim();
-  const customerPhone = document.querySelector("#customer-phone").value.trim();
-  const bookingDate = formatSelectedDate();
-  const message = [
-    "Hello Nails Ceylon, I'd like to request an appointment.",
-    "",
-    `Name: ${customerName}`,
-    `Phone: ${customerPhone}`,
-    `Service: ${service.name}`,
-    `Preferred date: ${bookingDate}`,
-    `Preferred time: ${selectedTime}`,
-    `Estimated price: ${formatPrice(service.price)}`
-  ].join("\n");
-  const whatsappUrl = `https://wa.me/94786788925?text=${encodeURIComponent(message)}`;
-
-  formMessage.textContent = `Thank you, ${customerName}! Opening WhatsApp with your booking request.`;
-  window.location.href = whatsappUrl;
 });
